@@ -18,7 +18,7 @@ fun <T : AbsPreLoadingView> KClass<T>.getOrCreate(
 
     if (cacheView != null) {
         printE(message = "获取预加载视图")
-        if(cacheView.parent is ViewGroup){
+        if (cacheView.parent is ViewGroup) {
             (cacheView.parent as ViewGroup).removeView(cacheView)
         }
     } else {
@@ -136,6 +136,8 @@ abstract class AbsPreLoadingView(context: Context) : FrameLayout(context) {
         onDestroy()
         if (intent != null && autoDestroyPreLoading) {
             remove(intent!!)
+        } else if (parent is ViewGroup) {
+            (parent as ViewGroup).removeView(this)
         }
     }
 
