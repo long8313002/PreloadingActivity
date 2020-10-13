@@ -3,16 +3,17 @@ package com.zhangzheng.preloading.library
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import kotlin.reflect.KClass
 
 abstract class AbsPreLoadingActivity : Activity() {
 
-    abstract fun createPreLoadingView(): AbsPreLoadingView
+    abstract fun  preLoadingViewClass() : KClass<out AbsPreLoadingView>
 
     private lateinit var preLoadingView: AbsPreLoadingView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        preLoadingView = createPreLoadingView()
+        preLoadingView =preLoadingViewClass().getOrCreate(intent, this)
         setContentView(preLoadingView)
         preLoadingView.callCreate(savedInstanceState)
     }
@@ -39,7 +40,7 @@ abstract class AbsPreLoadingActivity : Activity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        preLoadingView.callDestory()
+        preLoadingView.callDestroy()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

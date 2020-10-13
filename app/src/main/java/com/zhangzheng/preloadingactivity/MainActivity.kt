@@ -17,17 +17,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val intent = Intent(this,TestActivity::class.java)
+        intent.putExtra("id",1111)
 
-        PreLoading.preLoading(this,intent,TestPreLoadingView::class.java)
+        PreLoading.preLoading(this,intent,TestPreLoadingView::class.java,false)
 
-        Handler().postDelayed({
+        textView.setOnClickListener {
             startActivity(intent)
-        },5000)
-
-    }
-
-    override fun onResume() {
-        super.onResume()
-
+        }
     }
 }

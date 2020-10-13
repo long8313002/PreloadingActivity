@@ -15,7 +15,8 @@ object PreLoading {
         handler = Handler(ht.looper)
     }
 
-    fun <T : AbsPreLoadingView> preLoading(context: Context, intent: Intent, clazz: Class<T>) {
+    fun <T : AbsPreLoadingView> preLoading(
+        context: Context, intent: Intent, clazz: Class<T>,autoDestroy:Boolean = true) {
 
         val cacheView = AbsPreLoadingView.getCache(intent)
 
@@ -26,7 +27,7 @@ object PreLoading {
 
         handler.post {
             val instance = clazz.getConstructor(Context::class.java).newInstance(context)
-            instance.attach(intent)
+            instance.attach(intent,autoDestroy)
             instance.callCreate(null)
             instance.callStart()
             instance.callResume()
@@ -36,6 +37,10 @@ object PreLoading {
             printI(message = "已预加载完成")
         }
 
+    }
+
+    fun removePreLoading( intent: Intent){
+        AbsPreLoadingView.remove(intent)
     }
 
 }

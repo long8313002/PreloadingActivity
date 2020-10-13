@@ -4,17 +4,28 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import kotlin.reflect.KClass
 
 
-fun <T : AbsPreLoadingView> KClass<T>.getOrCreate(intent: Intent,context: Context):AbsPreLoadingView{
+fun <T : AbsPreLoadingView> KClass<T>.getOrCreate(
+    intent: Intent,
+    context: Context
+): AbsPreLoadingView {
 
-    val cacheView = AbsPreLoadingView.getCache(intent)
-    if(cacheView!=null){
+    var cacheView = AbsPreLoadingView.getCache(intent)
+
+    if (cacheView != null) {
         printE(message = "获取预加载视图")
+        if(cacheView.parent is ViewGroup){
+            (cacheView.parent as ViewGroup).removeView(cacheView)
+        }
+    } else {
+        cacheView = java.getConstructor(Context::class.java).newInstance(context)
+        cacheView?.attach(intent)
     }
-    return cacheView ?: java.getConstructor(Context::class.java).newInstance(context)
+    return cacheView!!
 }
 
 
@@ -55,7 +66,7 @@ abstract class AbsPreLoadingView(context: Context) : FrameLayout(context) {
             cacheViewMap[intent] = view
         }
 
-        fun remove(intent: Intent){
+        fun remove(intent: Intent) {
             cacheViewMap.remove(intent)
         }
     }
@@ -64,16 +75,19 @@ abstract class AbsPreLoadingView(context: Context) : FrameLayout(context) {
 
     var isPreLoaded = false
 
+    private var autoDestroyPreLoading = true
+
 
     protected var intent: Intent? = null
 
-    fun attach(intent: Intent) {
+    fun attach(intent: Intent, autoDestroyPreLoading: Boolean = true) {
         this.intent = intent
+        this.autoDestroyPreLoading = autoDestroyPreLoading
     }
 
 
-    fun callCreate(savedInstanceState: Bundle?){
-        if(!isPreLoaded){
+    fun callCreate(savedInstanceState: Bundle?) {
+        if (!isPreLoaded) {
             LayoutInflater.from(context).inflate(resId(), this)
             onCreate(savedInstanceState)
         }
@@ -83,8 +97,8 @@ abstract class AbsPreLoadingView(context: Context) : FrameLayout(context) {
 
     }
 
-    fun callStart(){
-        if(!isPreLoaded){
+    fun callStart() {
+        if (!isPreLoaded) {
             onStart()
         }
     }
@@ -94,7 +108,7 @@ abstract class AbsPreLoadingView(context: Context) : FrameLayout(context) {
     }
 
 
-    fun callResume(){
+    fun callResume() {
         onResume()
     }
 
@@ -102,7 +116,7 @@ abstract class AbsPreLoadingView(context: Context) : FrameLayout(context) {
 
     }
 
-     fun callPause(){
+    fun callPause() {
         onPause()
     }
 
@@ -110,7 +124,7 @@ abstract class AbsPreLoadingView(context: Context) : FrameLayout(context) {
 
     }
 
-    fun callStop(){
+    fun callStop() {
         onStop()
     }
 
@@ -118,9 +132,9 @@ abstract class AbsPreLoadingView(context: Context) : FrameLayout(context) {
 
     }
 
-    fun callDestory(){
+    fun callDestroy() {
         onDestroy()
-        if(intent!=null){
+        if (intent != null && autoDestroyPreLoading) {
             remove(intent!!)
         }
     }
